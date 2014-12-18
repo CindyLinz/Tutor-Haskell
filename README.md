@@ -8,4 +8,4 @@
 
 **想拿來自學的話, 如果覺得讀起來很吃力.. 可能是我的問題不是你的問題 囧**
 
-+ [2014.12.17 start - 一些會動的, hello world 等級的 haskell 範例程式碼](http://cindylinz.github.io/Tutor-Haskell?volume=start)
++ [2014.12.17 start --- 一些會動的, hello world 等級的 haskell 範例程式碼](http://cindylinz.github.io/Tutor-Haskell?volume=start)
