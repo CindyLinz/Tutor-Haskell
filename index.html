@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tutor Haskell</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      @font-face {
+        font-family: 'tea';
+        src: url(SentyTEA-Platinum.ttf);
+        src: url(simplified-SentyTEA-Platinum.ttf);
+      };
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'tea', 'Yanone Kaffeesatz';
+        font-weight: bold;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+      .remark-slide-content h1 {
+        font-size: 45px;
+      }
+      .remark-slide-content h2 {
+        font-size: 35px;
+      }
+
+      .remark-slide-content .header {
+        font-family: 'tea';
+        font-weight: bold;
+        font-style: italic;
+        text-align: left;
+        text-decoration: underline;
+        position: absolute;
+        left: 0.2em;
+        top: 0.2ex;
+        float: left;
+      }
+      .remark-slide-content .header::before {
+        content: "　";
+      }
+
+      .remark-inline-code {
+        background-color: #f0f0f0;
+      }
+
+      .remark-slide-content .footnote {
+        position: absolute;
+        bottom: 4ex;
+        right: 2em;
+      }
+
+      .remark-slide-content .del {
+        text-decoration: line-through;
+      }
+
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+    </textarea>
+    <script src="remark-0.7.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var search = document.location.search;
+      var volume = search.replace(/[&?]volume=([^&]+)/, function($0, $1){ return $1 });
+      if( volume ){
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function(){
+          document.querySelector('#source').innerHTML = xhr.responseText;
+          var slideshow = remark.create();
+        };
+        xhr.overrideMimeType("text/plain; charset=UTF-8");
+        xhr.open('get', volume+'/slide.md', true);
+        xhr.send();
+      }
+    </script>
+  </body>
+</html>
