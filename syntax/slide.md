@@ -56,7 +56,7 @@ layout: true
 ---
 
 ```haskell
-{- LANGUAGE
+{-# LANGUAGE
   ScopedTypeVariables, UnboxedTuples, TypeSynonymInstances
 , StandaloneDeriving, DeriveDataTypeable, DeriveFunctor
 , DeriveFoldable, DeriveTraversable, DeriveGeneric
@@ -69,12 +69,12 @@ layout: true
 , LambdaCases, EmptyCase, MultiWayIf, NamedFieldPuns
 , RecordWildCards, OverloadedStrings, TupleSections
 , OverloadedLists, ViewPatterns, TransformListComp
-, MonadComprehensions -}
+, MonadComprehensions #-}
 ```
 
 --
 
- 0. `{- ... -}` 是 Haskell 的 block comment, 裡面可以放 pragma,
+ 0. `{- ... -}` 是 Haskell 的 block comment, 用 `{-# ... #-}` 的方式放 pragma,
     其中 `LANGUAGE` 用來開 extension
 
 --
@@ -202,7 +202,7 @@ layout: true
 
 ---
 
- 0. 參數部分是差不多的:
+  + 參數部分是差不多的:
      0. Java 的一個 `Object` type 參數表示呼叫時可以給它任意一個 type, 這個 method 會想辦法處理這個來路不明的 type
 
      0. Haskell 的一個 `a` type 參數也表示呼叫時可以給它任意一個 type, 這個函數都可以處理
@@ -222,7 +222,7 @@ layout: true
      0. Haskell 可以描述兩個都是任意 type 的參數必須任意為同一種 type 或是可同可不同; Java 沒有這樣的描述方式
 
 ---
- 0. return type 的部分方向是相反的:
+  + return type 的部分方向是相反的:
      0. Java 的 method return type 如果是 `Object`, 我們呼叫它以後會拿到其中一種 `Object`:
         method 的實作可以隨便選一種 type return, 甚至可以亂數決定每次都不一樣.
         呼叫端拿到 return 值以後要想辦法處理這有可能是任何一種 type 的物件.
@@ -238,8 +238,7 @@ layout: true
      0. Haskell 函數吐出的 type 如果越自由, 函數的實作就越侷限, 呼叫端就越自由.
          0. 以全無限制的 `a` 為例, 大概只能剛好參數裡面有 `a` 就直接把它吐出去,
             或是以無窮遞迴之類的方式直接把程式 halt 住或 crash 掉.<br>
-            (FFI 等級的黑魔法不列入討論)
-         0. 如果是 `Num a => a` 的話, 那有可能可以拿參數的 `a` 作一些處理, 例如說兩個參數 `a` 加起來再吐出去
+         0. 如果是 `Num a => a` 的話, 那可用的操作多一點點, 可以拿參數的 `a` 作一些處理, 例如說兩個參數 `a` 加起來再吐出去
          0. 呼叫端自由, 因為可以運用的 type 比較多
 
 ---
@@ -322,9 +321,10 @@ layout: true
 
 ---
 ## 可以寫 Type Signature 的地方
-  + 在有標 type 的泛型函數內, 可以引用泛型函數 type signatue 裡的 type variable 來標內部的 type
+  + 在有標 type 的泛型函數內, 可以引用泛型函數 type signatue 裡的 type variable 來標內部的 type<br>
+    不過在外層要額外把 signature 裡所有的 type variable 加進 `forall` 宣告, 像這樣:
     ```haskell
-    f :: Num a => a -> b -> (a, b)
+    f :: forall a b. Num a => a -> b -> (a, b)
     f a b =
       let
         aa :: a
@@ -332,6 +332,8 @@ layout: true
       in
         (aa, b)
     ```
+    因為這是個後來才加進的用法 (extension: ScopedTypeVariables),
+    為了讓老程式可以相容, 所以加上額外的啟動方式.
 
 ---
 ## 可以寫 Type Signature 的地方
@@ -408,7 +410,7 @@ data BinaryTree :: * -> * where
 
 --
 
-## 上一頁對應的省略寫法
+## 上一頁對應的省略寫法 (學名叫作 ADT)
 
 ```haskell
 data Bool = False | True
@@ -431,6 +433,45 @@ data BinaryTree a = Leave a | Branch (BinaryTree a) a (BinaryTree a)
 ```
 
 打的字少很多, 但是用法比較限制
+
+---
+## GADT 可以寫, 但 ADT 不能寫的例子
+
+```haskell
+data Expr :: * -> * where
+  I   :: Int  -> Expr Int
+  B   :: Bool -> Expr Bool
+  Add :: Expr Int -> Expr Int -> Expr Int
+  Mul :: Expr Int -> Expr Int -> Expr Int
+  Eq  :: Expr Int -> Expr Int -> Expr Bool
+```
+ 0. 當 `Expr` 後面跟的 type 不同時, 需要對應不同的 data constructor 的時候
+ 0. 這一個作法可以讓 GHC compile 時挑出 `Add (I 3) (B True)` 這種有錯誤的式子<br>
+    (建立 value 的 `I 3`, `B True` 式子後面會講)
+
+---
+## 這邊的 \* 也可以放別的 type 來作一些效果
+
+```haskell
+data Nat = Ze | Su Nat
+  -- 這是自然數的 Church encoding 表示法
+  -- Ze 是 0
+  -- Su Ze 是 1
+  -- Su (Su Ze) 是 2
+  -- ...
+
+data Vec :: * -> Nat -> * where
+  Nil  :: Vec a Ze
+  Cons :: a -> Vec a n -> Vec a (Su n)
+  -- Vec a n 這個 type 裡面 n 放入的 type 的意義是 Vec 的長度
+```
+ 0. type 裡面放入有 value 意味的東西, 可以拿來作某種程度的行為證明.
+    例如說證明對某個 `Vec` 的 access 一定不會出界
+ 0. 能放在 type 裡的 data type 只有比較簡單的 type, 前面看到的都是簡單的 type.
+    這邊的 `Vec` 不可以. 別的不簡單的 type 以後再看.
+ 0. 好奇想查資料的話, 列一下關鍵字:
+      * 這邊第一列放的 `*` 和 `Nat` 叫作 Kind
+      * 把 value 當 type 用的叫作 DataKind
 
 ---
 
@@ -516,5 +557,318 @@ let
 ---
 
 layout: false
+class: center, middle
 
-# 
+# class 與 instance
+
+---
+
+layout: true
+
+.header[class 與 instance]
+
+---
+## 描述一個 type 的 class
+
+```haskell
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+  a == b = not (a /= b) -- 預設實作
+  a /= b = not (a == b) -- 預設實作
+```
+(後面會講 Haskell 的 operator)
+
+--
+```haskell
+instance Eq Bool where
+  True == True = True
+  True == False = False
+  False == True = False
+  False == False = True
+  -- 沒定義 (/=) 的部分, 那它就會去拿預設實作來用
+```
+
+--
+```haskell
+instance Eq a => Eq (Maybe a) where
+  Nothing == Nothing = True
+  Just a == Just b = a == b -- 這邊的 a == b 是利用 Eq a 這個前提的 ==
+  _ == _ = False
+```
+這邊 `Eq a` 是充分條件, 可以這樣讀: 若 `Eq a` 則 `Eq (Maybe a)`
+
+---
+## 描述一個 type 的 class
+
+```haskell
+class Eq a => Ord a where
+  (<) :: a -> a -> Bool
+  ...
+```
+這邊 `Eq a` 是必要條件, 可以這樣讀: 若有 `Eq a` 才能 `Ord a`
+
+--
+```haskell
+instance Ord Bool where
+  False < True = True
+  _ < _ = False
+```
+
+--
+```haskell
+instance Ord a => Ord (Maybe a) where
+  Nothing < Nothing = False
+  Nothing < _ = True
+  Just _ < Nothing = False
+  Just a < Just b = a < b
+```
+
+---
+## 描述兩個以上 type 的 class
+
+```haskell
+class Mult a b c | a b -> c where
+  (*) :: a -> b -> c
+```
+先不看第一列裡面的 `| a b -> c`, 這邊說, a 和 b 可相乘, 乘出來會得到 type c
+
+--
+```haskell
+data Vector = Vector Int Int
+data Matrix = Matrix Vector Vector
+
+instance Num Vector where
+  Vector a1 b1 + Vector a2 b2 = Vector (a1+a2) (b1+b2)
+  ...
+instance Num Matrix where
+  Matrix a1 b1 + Matrix a2 b2 = Matrix (a1+a2) (b1+b2)
+  ...
+```
+
+--
+```haskell
+instance Mult Int Int Int where
+  a * b = a Prelude.* b
+instance Mult Int Vector Vector where n * Vector a b = Vector (n * a) (n * b)
+instance Mult Vector Int Vector where Vector a b * n = Vector (a * n) (b * n)
+instance Mult Int Matrix Matrix where n * Matrix a b = Matrix (n * a) (n * b)
+instance Mult Matrix Int Matrix where Matrix a b * n = Matrix (a * n) (b * n)
+instance Mult Matrix Matrix Matrix where ...
+instance Mult Matrix Vector Matrix where ...
+```
+
+---
+## 描述兩個以上 type 的 class
+  + `| a b -> c` 的部分用來引導 Haskell 推論 type 的方向
+
+      + 告訴 Haskell 說如果 `a` 和 `b` 的 type 已知, `c` 就會只剩唯一解 (找出那個 `a` 和 `b` 符合的 instance, 它指出來的 `c` 就是答案)
+      + 否則原本也需要獨立找出 `c` 的 type, 不拿 `a` 和 `b` 當作限制條件
+      + 這個關鍵字叫作 Functional Dependency
+
+--
+  + 有加這個引導, 會讓這個式子用起來比較方便
+    ```haskell
+    a, b, c :: Matrix
+    (a, b, c) = ... -- 假設有寫好 :p
+    d = (a * b) * c -- 沒加引導的話, Haskell 也不知道要怎麼找出 (a * b) 的 type..
+    e = (a * b :: Matrix) * c -- 沒加引導的話, 要寫成這樣才 compile 得過
+    ```
+
+--
+  + 可以一次放好幾組 `| a b -> c | a c -> b | b c -> a` (當然此例這樣有點怪)
+
+--
+  + 也不一定要用到所有的 type variable, `| a -> c | c -> a` 這樣也可以 (當然此例也不適合就是..)
+
+---
+## class 裡面也可以定義 data type
+```haskell
+class Some a where
+  data SomeK :: * -> *
+  ...
+```
+
+```haskell
+instance Some MyType where
+  SomeK = Maybe
+  ...
+```
+
+這個關鍵字可以查 type family
+
+---
+## 與 C++ template 作類比
+
+ 0. Haskell class 有點像 C++ template 裡一個叫作 traits 的技巧<br>
+    對泛型的 type 作限制 / 描述
+
+---
+
+layout: false
+class: center, middle
+
+# Operator 語法
+
+---
+
+layout: true
+.header[Operator 語法]
+
+---
+  + 定義 operator (prefix 寫法, 跟函數一樣)
+    ```haskell
+    (^) a 0 = 1
+    (^) a n = a * (^) a (n-1) -- prefix 用法
+    -- 或
+    (^) a n = a * (a ^ (n-1)) -- infix 用法
+    ```
+
+    ```haskell
+    (!) 0 = 1
+    (!) n = n * (!) (n-1) -- prefix 用法
+    -- 或
+    (!) n = n * ((n-1) !) -- postfix 用法 (其實是 section)
+    ```
+
+--
+  + 定義 operator (infix 寫法)
+    ```haskell
+    a ^ 0 = 1
+    a ^ n = a * (a ^ (n-1))
+    ```
+    (unary operator 只能用 prefix 寫法定義)
+
+---
+  + 定義 operator 的 fixity (如果想要流暢地連用的話)
+    ```haskell
+    infixr 8 ^, ^^, **
+    infixl 7 *, /, &#768;div &#768;, &#768;mod &#768;, &#768;rem &#768;, &#768;quot &#768;
+    infixl 6 +, -
+    infix 4 ==, /=, <, <=, >, >=
+    infixr 3 &&
+    infixr 2 ||
+    ```
+     0. 上面是 standard library 裡面定義的部分 operator
+     0. 數字是 precedence, 範圍是 0~9, 9 最高
+     0. ``div &#768;` 是函數的 infix 用法
+     0. 同 precedence 的 infixl 如果連著用,<br>寫 `1 + 2 - 3 + 4`<br>解讀為 `(((1 + 2) - 3) + 4`
+     0. 同 precedence 的 infixr 如果連著用,<br>寫 `1 ^ 2 ^ 3`<br>解讀為 `1 ^ (2 ^ 3)`
+     0. infix 不能連用, (需要加括號的意思)
+     0. 要跟定義該 operator 或函數的地方定義
+
+---
+  + 使用 operator (infix 用法, 好像很常見了..)
+    ```haskell
+    3 - 4
+    3  &#768;sub &#768; 4
+    ```
+    任何函數都可以加 backquote 之後 infix 使用
+
+--
+  + 使用 operator (prefix 用法, 用起來像函數)
+    ```haskell
+    (-) 3 4
+    sub 3 4
+    ```
+
+--
+  + 使用 operator (section 用法, 參數沒給足, 一定要放一組括號)
+    ```haskell
+    (- 4) 3
+    (3 -) 4
+    ```
+    會變成一個還要再吃一個參數的函數, 剩的是哪一個看原本餵的那一個在哪而定
+
+--
+  + postfix 用法的 unary operator 其實是 section, 所以一定要放括號把 operator 和參數括起來
+
+--
+  + prefix 用法的 unary operator 就是標準的 operator prefix 用法, 一定要放括號把 operator 自己括起來<br>
+    負號是 Haskell 內建寫死的特例, 不是正常的 operator
+
+---
+  + `:` 開頭的 operator 是 type 用的, 例如.. List 可以這樣定
+    ```haskell
+    data List :: * -> * where
+      Nil :: List a
+      (:-:) :: a -> List a -> List a
+    infixr 2 :-:
+    ```
+    那建立 List value 的時候可以這樣寫, 感覺可能比較開心?
+    ```haskell
+    aList = 3 :-: 4 :-: 5 :-: Nil
+    ```
+
+--
+  + Haskell 內建的 list 是這樣用 (反正被內建定義掉了, 我們沒得定義, 只能用 XD)
+    ```haskell
+    let
+      bList = 3 : 4 : 5 : []
+      cList = [3,4,5] -- 這個是內建的 syntax sugar, 會自動變成上面那種寫法
+    in
+      case cList of
+        (x : y : zz) -> ... -- 注意 zz 會吃到整個剩下來的尾巴
+        [a, b, c] -> ... -- 這個會視為 (a : b : c : []) 所以數量要一樣才會 match
+    ```
+     + 以 `[a]` 的語法表示 list type 應該是 Haskell 另一個例外 (我不是很確定..) 大家就別追究了 ^^|
+     + 另有一組漂亮而且規則漂亮一致的 list comprehension (其實是 monad comprehension 的特例),
+       不過不會也不嚴重, 以後再提 ^^|
+
+---
+## Operator 小結
+  + Operator 在語意功能上沒有額外的用處,
+    只是語法上的一種 fu..
+
+--
+  + fu 很重要, 要小心用...
+
+--
+  + fu 能載舟, 亦能覆舟
+
+---
+## Operator 小結
+  + 好的例子:
+    ```haskell
+    ($) :: (a -> b) -> a -> b
+    f $ a = f a
+    infixr 0 $
+
+    -- f (g (h (k a))) 可以寫成 f $ g $ h $ k a
+    ```
+    這個在 Haskell 常見的 `$` 用法, 完全不是靠語法定義的東西, 只是一個單純的 operator
+
+--
+  + 另一個例子: (這是 `lens` 這個 package 裡的東西)<br>
+    我不知道這個算不算好.. 讀熟了很好讀, 不過......
+    ```haskell
+    (&) :: a -> (a -> b) -> b
+    a & f = f a
+    infixl 1 &
+
+    ("hello","world") & _1.element 0 .~ 'j' & _1.element 4 .~ 'y'
+    -- 結果是 ("jelly","world")
+    _1.element 4 .~ 'y' $ _1.element 0 .~ 'j' $ ("hello","world")
+    -- 這是一樣的東西
+    ```
+
+---
+## Operator 小結
+  + 壞的例子: benchmarkgame 上面某支計算 pi digit 的程式.. (崩潰大哭)
+    ```haskell
+    import System.Environment
+
+    pidgits n = 0 % (0 # (1,0,1)) where
+     i%ds
+      | i >= n = []
+      | True = (concat h ++ "\t:" ++ show j ++ "\n") ++ j%t
+      where k = i+10; j = min n k
+            (h,t) | k > n = (take (n &#768;mod &#768;10) ds ++ replicate (k-n) " ",[])
+                  | True = splitAt 10 ds
+     j # s | n>a || r+n>=d = k # t
+         | True = show q : k # (n*10,(a-(q*d))*10,d)
+      where k = j+1; t@(n,a,d)=k&s; (q,r)=(n*3+a) &#768;divMod &#768;d
+     j&(n,a,d) = (n*j,(a+n*2)*y,d*y) where y=(j*2+1)
+
+    main = putStr.pidgits.read.head =<< getArgs
+    ```
