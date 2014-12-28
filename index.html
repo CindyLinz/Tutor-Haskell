@@ -43,7 +43,7 @@
       }
 
       .remark-inline-code {
-        background-color: #f0f0f0;
+        background-color: #fdf6e3;
       }
 
       .remark-slide-content .footnote {
@@ -78,7 +78,9 @@
         var xhr = new XMLHttpRequest();
         xhr.onload = function(){
           document.querySelector('#source').innerHTML = xhr.responseText;
-          var slideshow = remark.create();
+          var slideshow = remark.create({
+            highlightStyle: 'solarized_light'//'kimbie.light'//'docco'//
+          });
         };
         xhr.overrideMimeType("text/plain; charset=UTF-8");
         xhr.open('get', volume+'/slide.md', true);
