@@ -421,14 +421,61 @@ type Complex a = Either String (Maybe a)
 
 ---
 
-## pattern
+## Pattern Synonym
 
 pattern synonym, 可以對資料型態的「形狀」作額外的 alias<br>
 可以用 alias 來建資料, 也可以用 alias 來作 pattern matching
 
 ```haskell
+data Type = App String [Type]
 
+pattern Func t1 t2 = App "->" [t1, t2]
+pattern I = App "Int" []
+pattern B = App "Bool" []
+
+isPositive = Func I B
+-- 就是 isPositive = App "->" [App "Int" [], App "Bool" []]
+-- 相當於我們可以訂義一堆不同面貌的 data constructor
+
+-- pattern matching 這樣用
+case ooo of
+  Func a b -> ...
+    -- 當 ooo 長得像 App "->" [t1, t2] 的時候會 match
+    -- t1, t2 就會裝到這邊的 a, b
+  I -> ...
+  B -> ...
+-- 相當於我們可以為一個 data type 定義一堆不同面貌的可 match 的 pattern
 ```
+
+---
+
+## Pattern Synonym
+
+  + 單向的 pattern synonym, pattern 裡面列出的變數沒有涵蓋右邊的所有變數. 只能 pattern match 時使用.
+    拿來 construct 的話, 沒列到的變數不知道要放什麼
+    ```haskell
+    pattern Head a <- a : _ -- 這邊改用向左箭頭而不是等號
+
+    -- match 時這樣用
+    case [1,3,2,4,5] of
+      Head 5 -> ... -- 如果 list 第一項是 5 的話會走這一項
+      Head a -> ... -- a 會拿到 1
+    ```
+    (雖然我覺得沒列到的可以全都放 `undefined`, 就一樣可以 construct XD 不過有別的組合用法, 手動從語法上把語意分出來比較明確,
+    對未來可能出現的新組合用法也比較不會出現問題)
+
+---
+
+## Pattern Synonym
+
+  + 我們可以拆成好幾個 `module` 依情境分別選擇 (re)`export` 不同長相的 pattern<br>
+--
+    <span class=del>(封裝封裝好像就會比較高級.... XD)</span>
+--
+  + 後面講到 ViewPatterns 時, 配合著用威力更大
+--
+  + pattern synonym 作 pattern matching 時, evaluate 的順序和直接寫出它背後的 pattern 的順序是不一樣的,
+    不過還沒介紹 Haskell 的 evaluate 順序, 所以先在此略過
 
 ---
 
@@ -502,26 +549,13 @@ g x = case x of
 
 ## Guard & Pattern Guard & multi-way if
 
+guard 裡面可以先 let 一些 guard 自己要用的東西.. 逗點隔開
 ```haskell
-if | a < 3 -> putStrLn "less then 3"
-   | a > 3 -> putStrLn "larger than 3"
-   | otherwise -> putStrLn "others"
+isPositive :: Int -> Bool
+isPositive n
+  | let n0 = n - 1, n0 >= 0 = True
+  | otherwise = False
 ```
-multiway if 為縮排式, 也可以換為大括號, 而因為有 | 作分隔了所以分號可加可不加.
-這第四種需要, 是為了巢狀多層使用的時候語法不會混淆.
-
-```haskell
-if | a < 3 -> putStrLn "less then 3"
-   | a > 3 -> if
-     | b < 4 -> putStrLn "x"
-     | b > 5 -> putStrLn "y"
-     | otherwise -> putStrLn "z"
-   | otherwise -> putStrLn "others"
-```
-
-我覺得 multiway if 大概只會用在 statement 環境裡面放 statement,
-因為如果是要分好幾個 branch 決定要怎麼 bind 資料到變數 (或一些變數所成的 pattern) 上,
-用上一頁的第三種用法就夠了.
 
 ---
 
@@ -542,6 +576,51 @@ addLookup env var1 var2
 
 ---
 
+## Guard & Pattern Guard & multi-way if
+
+multiway if 就是拿 guard 當 if 用..
+
+```haskell
+if | a < 3 -> putStrLn "less then 3"
+   | a > 3 -> putStrLn "larger than 3"
+   | otherwise -> putStrLn "others"
+```
+multiway if 為縮排式, 也可以換為大括號, 而因為有 | 作分隔了所以分號可加可不加.
+這第四種需要, 是為了巢狀多層使用的時候語法不會混淆.
+
+```haskell
+if | a < 3 -> putStrLn "less then 3"
+   | a > 3 -> if
+     | b < 4 -> putStrLn "x"
+     | b > 5 -> putStrLn "y"
+     | otherwise -> putStrLn "z"
+   | otherwise -> putStrLn "others"
+```
+
+---
+
+## Guard & Pattern Guard & multi-way if
+
+我覺得 multiway if 大概只會用在 statement 環境裡面放 statement,
+因為如果是要分好幾個 branch 決定要怎麼 bind 資料到變數 (或一些變數所成的 pattern) 上,
+用一般 guard 的第三種用法就夠了, 字還比較少.
+
+```haskell
+good = if
+  | a < 3 -> "X"
+  | a > 3 -> "O"
+  | otherwise -> "="
+```
+直接寫成
+```haskell
+good
+  | a < 3 = "X"
+  | a > 3 = "O"
+  | otherwise = "="
+```
+
+---
+
 ## View Patterns
 
 在 pattern 要 match 以前, 先幫它加工一下再 match. 這個「加工」就像是某種 view 的意義
@@ -558,3 +637,56 @@ example :: Maybe ((String -> Integer,Integer), String) -> Bool
 example Just ((f,_), f -> 4) = True
 -- 要用的 view 函數, 可以是在同一個 pattern 裡面的左邊已經 match 到的東西 (不能從右邊拿)
 ```
+
+---
+
+## View Patterns
+
+  + 配合 pattern synonym 使用
+    ```haskell
+    data Temperature = Celsius Rational
+      -- 註: Rational 是0誤差精度無上限(以記憶體為限)有理數喔
+
+    c2f, f2c :: Rational -> Rational
+    c2f c = c / 5 * 9 + 32
+    f2c f = (f - 32) / 9 * 5
+
+    pattern Fahrenheit a <- Celsius (c2f -> a)
+      -- view pattern 只能用在單向 pattern synonym
+      -- 畢竟 GHC 沒有保證生出反函數的機制
+    -- 所以反向 (construct 向) 不能用 pattern
+    -- 只能用一個叫 smart constructor 的技巧
+    fahrenheit a = Celsius . f2c
+
+    -- 為了對稱, 我們也作一個攝氏的 smart constructor
+    celsius = Celcius
+
+    -- 然後我們就 export:
+    --   (fahrenheit, celsius, pattern Fahrenheit, Temperature (Celsius))
+    ```
+
+---
+
+## View Patterns
+
+  + 配合 pattern synonym 使用<br>
+    用起來像這樣
+    ```haskell
+    import Temperature -- 假設上一頁的程式碼在這模組裡
+
+    todayTemp = celsius 11
+    isCold temp = case temp of
+      Fahrenheit f | f < 50 -> True
+      _ -> False
+    ```
+--
+  + 以下這些是 pattern synonym 的 future work..
+    ```haskell
+    pattern Fahrenheit a <- Celsius (c2f -> a) where
+      Fahrenheit a = Celsius . f2c
+    -- 這樣 constructor 就不用 smart 了 (咦
+
+    pattern Succ n <- n1 | let n = n1-1, n >= 0 where
+      Succ n = n + 1
+    -- 可以混用 guard
+    ```
