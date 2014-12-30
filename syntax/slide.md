@@ -68,7 +68,7 @@ layout: true
 , EmptyDataDecls, KindSignatures, GeneralizedNewtypeDeriving
 , LambdaCases, EmptyCase, MultiWayIf, NamedFieldPuns
 , RecordWildCards, OverloadedStrings, TupleSections
-, OverloadedLists, ViewPatterns, TransformListComp
+, OverloadedLists, ViewPatterns, TransformListComp, PatternSynonyms
 , MonadComprehensions #-}
 ```
 
