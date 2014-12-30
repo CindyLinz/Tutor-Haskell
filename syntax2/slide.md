@@ -497,7 +497,7 @@ attack (Player {atk=atk1}) (p2 @ Player {hp=hp2, def=def2}) = ...
 倒過來寫的 `let ... in ...`, 不過允許使用的地方比較少<br>
 (這裡講的不包含 `module`, `data`, `class`, `instance` 等語法所附帶的 `where`)
 
-  + 函數定義的地方 (沒參數的函數也算歐).. 每一組 pattern 可以放一組 where
+  + 函數定義的地方 (沒參數的函數也算歐).. 每一個 pattern 可以放一組 where
     ```haskell
     f 0 a b = (go1 a, go2 b) where
       go1 = (+1)
@@ -635,7 +635,10 @@ addLookup env (lookup -> Just a) (lookup -> Just b) = a + b
 
 example :: Maybe ((String -> Integer,Integer), String) -> Bool
 example Just ((f,_), f -> 4) = True
--- 要用的 view 函數, 可以是在同一個 pattern 裡面的左邊已經 match 到的東西 (不能從右邊拿)
+-- 要用來當 view 的函數, 可以是在同一個 pattern 裡面的左邊已經 match 到的東西,
+-- 不能從右邊拿..
+-- 因為這整個 pattern 還沒 match 完, 其 match 的順序是從左邊開始
+-- 已經 match 到的部分才能拿來用
 ```
 
 ---
@@ -656,10 +659,11 @@ example Just ((f,_), f -> 4) = True
       -- 畢竟 GHC 沒有保證生出反函數的機制
     -- 所以反向 (construct 向) 不能用 pattern
     -- 只能用一個叫 smart constructor 的技巧
-    fahrenheit a = Celsius . f2c
+    -- (定義函數當 constructor 用)
+    fahrenheit = Celsius . f2c
 
     -- 為了對稱, 我們也作一個攝氏的 smart constructor
-    celsius = Celcius
+    celsius = Celsius
 
     -- 然後我們就 export:
     --   (fahrenheit, celsius, pattern Fahrenheit, Temperature (Celsius))
@@ -690,3 +694,41 @@ example Just ((f,_), f -> 4) = True
       Succ n = n + 1
     -- 可以混用 guard
     ```
+
+---
+
+## do-notation
+
+Haskell std lib 有個 class 叫作 `Monad`, 裡頭有個重要的函數 (operator) 叫作 `(>>=)`
+```haskell
+class Monad m where
+  (>>=) :: m a -> (a -> m b) -> m b
+  ... -- 其他函數
+```
+do-notation 是為它量身打造的
+--
+
+```haskell
+do
+  putStrLn "Hi"
+  line <- getLine
+  putStrLn $ "You said " ++ line
+```
+--
+直接譯為下面這樣一段 code
+```haskell
+putStrLn "Hi" >>= \_ -> getLine >>= \line -> (putStrLn $ "You said " ++ line)
+```
+--
+ 0. 用 `(>>=)` 把 statements 接起來
+
+--
+ 0. 有用 `<-` 接結果的話, 後面的 lambda 的參數就用這邊接的變數名
+
+--
+ 0. 沒有接的話, 後面的 lambda 用 `_` 當參數, 也就是接起來丟掉
+
+--
+ 0. Monad 與其應用以後再說吧~~
+--
+    有個遞迴版的 `mdo` 也是以後再說吧~~
