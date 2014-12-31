@@ -19,3 +19,11 @@
       + class / instance 語法 (含 functional dependency, 和一點點 type family)
       + operator 語法
       + 這一次開始想儘快把最必要的語法掃過一遍, 將枯燥的東西趕快帶過去, 以後再來主題性地看組合應用.
+
+  + [2014.12.31 syntax2](http://cindylinz.github.io/Tutor-Haskell?volume=syntax2)
+      + record syntax
+      + existential type
+      + pattern synonym
+      + view patterns
+      + guard, pattern guard, multiway if
+      + do-notation
