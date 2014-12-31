@@ -77,8 +77,6 @@ setY a (Player a1 _ a2 a3 a4 a5 a6 a7) = Player a1 a a2 a3 a4 a5 a6 a7
 attack p1 p2 =
   let
     max a b = if a > b then a else b
-
-    max a b = if a > b then a else b
     hp' = max 0 (getHP p2 - max 1 (getAtt p1 - getDef p2))
   in
     setHP hp' p2
