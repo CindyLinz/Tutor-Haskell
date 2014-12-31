@@ -430,13 +430,16 @@ newtype MyMaybe a = MyMaybe (Maybe a)
 
 --
  0. 用「貌似」data construct 或 pattern matching 來建立新 type 資料或取得原 type 的資料, 但 runtime 沒有 overhead
-    ```haskell
-    a = MyMaybe (Just 3)
-    ...
-    case a of
-      MyMaybe Nothing -> ...
-      MyMaybe (Just x) -> ...
-    ```
+
+---
+
+```haskell
+a = MyMaybe (Just 3)
+...
+case a of
+  MyMaybe Nothing -> ...
+  MyMaybe (Just x) -> ...
+```
 
 ---
 
@@ -711,10 +714,10 @@ c = case "CindyLinz" of
   (head -> 'C') -> "the head is C"
 
 addLookup :: FiniteMap -> Int -> Int -> Int
-addLookup env (lookup -> Just a) (lookup -> Just b) = a + b
+addLookup env (lookup env -> Just a) (lookup env -> Just b) = a + b
 
 example :: Maybe ((String -> Integer,Integer), String) -> Bool
-example Just ((f,_), f -> 4) = True
+example (Just ((f,_), f -> 4)) = True
 -- 要用來當 view 的函數, 可以是在同一個 pattern 裡面的左邊已經 match 到的東西,
 -- 不能從右邊拿..
 -- 因為這整個 pattern 還沒 match 完, 其 match 的順序是從左邊開始
