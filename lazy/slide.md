@@ -99,6 +99,8 @@ layout: true
 
 --
   + ```haskell
+    f 1 a b = a * b
+
     f 1 (100 + 10) (100 - 10)
     ```
 
@@ -128,6 +130,8 @@ layout: true
 
 --
   + ```haskell
+    f 2 a b = a
+
     f 2 (100 + 10) (100 - 10)
     ```
 
@@ -152,6 +156,8 @@ layout: true
 
 --
   + ```haskell
+    f 2 a b = a
+
     f 2 (100 + 10) (100 - 10)
     ```
 
@@ -171,6 +177,8 @@ layout: true
 
 --
   + ```haskell
+    f 1 a b = a * b
+
     f 1 (100 + 10) (100 - 10)
     ```
 
@@ -200,6 +208,8 @@ layout: true
 
 --
   + ```haskell
+    f 1 a b = a * b
+
     f 1 (100 + 10) (100 - 10)
     ```
 
@@ -234,6 +244,8 @@ layout: true
 
 --
   + ```haskell
+    f 1 a b = a * b
+
     f 1 (f 1 10 20) (100 - 100)
     ```
 
@@ -294,7 +306,7 @@ layout: true
     ```
 
 --
-  + Non-strict - 參數爆, 結果有時候不會爆
+  + Non-strict - 參數爆, 結果不一定會爆
     ```haskell
     f :: a -> b -> b
     f a b = b
@@ -309,7 +321,7 @@ layout: true
 
   + 不過 Non-strict 是一個否定定義的辭
 
-      + 國中時學到的「無理數」的定義: 數線上面, 有理數以外的那些數
+      + 國中時學到的「無理數」的定義: 數線上面, 不是有理數的那些數
       + No-SQL 的定義: ...
 
 --
@@ -330,6 +342,10 @@ layout: true
 
 ---
 
+## Lazy evaluation 作為學習材料
+
+--
+
   + 這是符合 Non-strict evaluation 的一種 evaluation
 
 --
@@ -340,7 +356,8 @@ layout: true
 --
 
   + GHC 加上了最佳化, 所以運行過程和 lazy evaluation 也不完全一樣,
-    只是會確保會被觀察到的東西表現要一致, 然後會比較快.
+    只是會確保會被觀察到的東西表現要一致, 然後會比較快.<br>
+    (除了記憶體用量不一樣所造成的不一致之外, 應該要同進同退, 該爆的會一起爆, 不該爆的會一起不爆.. 不然應該列為實作的 bug)
 
 --
 
@@ -372,21 +389,31 @@ layout: true
 
 --
 
-  + 不過只靠這樣一小步 (確認整個程式的最表面會不會爆)<br>
+  + 只靠這樣一小步 (確認整個程式的最表面會不會爆)<br>
     就可以把整個程式執行完了
+
+--
+
+  + 雖然上面是這樣說成明確的兩種狀態, 但這不一定是有限時間內能作出的判斷<br>
+    (學名 undecidable, halting problem)
+
+--
+
+  + 我們也只能列出什麼叫作結果有出來 (沒爆), 無法建構性地列出所有的爆掉狀態,
+    它只是一個虛擬的: 結果出不來的概念
 
 ---
 
 ## 糾纏態的一小步．程式的一大步
 
-  + 表面已解開 (沒爆) 的情況: (學名叫 weak-head normal form)
+  + 表面已解開 (沒爆) 的情況: (學名叫 weak head normal form)
 
 --
 
       + 單純的值
         ```haskell
         1, 2, 3, 'A', 'b' -- 單純的值
-        .... -- 指標, external buffer 等等外部值.. (用 Haskell 寫不出表達式 ^^|)
+        .... -- 指標, external buffer 等等外部值.. (用 Haskell 寫不出建構式 ^^|)
         ```
 
 --
@@ -449,7 +476,8 @@ layout: true
 --
   + 有本 [Purely Functional Data Structure by Okasaki](https://www.cs.cmu.edu/~rwh/theses/okasaki.pdf)
     大量運用這個技巧來實作 real time persistent data structure<br>
-    (他用的語法是 Standard ML 而不是 Haskell, 不過他用的是 lazy eval 的特別版, 所以比較像 Haskell)
+    (他用的語法是 Standard ML 而不是 Haskell, 不過他用的是 lazy eval 的特別版,
+    行為反而跟 Haskell 一樣, (語法上)不會太難讀)
 
 
 ---
@@ -553,7 +581,14 @@ take 4 fib
 ---
 ```haskell
 take 4
-  ( let fib = 1 : fib1
+  ( let fib = <.in.>
+    in 1 : 1 : zipWith (+) fib (tail fib)
+  )
+```
+---
+```haskell
+take 4
+  ( let fib = <.in.>
     fib1 = 1 : zipWith (+) fib (tail fib)
     in 1 : fib1
   )
@@ -581,7 +616,16 @@ take 4
 1 : take 3
   ( let
     fib = 1 : fib1
-    fib1 = 1 : fib2
+    fib1 = <.in.>
+    in 1 : zipWith (+) fib (tail fib)
+  )
+```
+---
+```haskell
+1 : take 3
+  ( let
+    fib = 1 : fib1
+    fib1 = <.in.>
     fib2 = zipWith (+) fib (tail fib)
     in 1 : fib2
   )
@@ -880,7 +924,7 @@ loeb x = go where go = fmap ($ go) x
     ```
 
 --
-  + 我們要用的試算表不一定希望是 `[a]` (它有點慢)<br>
+  + 我們要用的試算表不一定希望是 `[a]` (它有點慢, 而且一維的試算表很奇怪)<br>
     我們的試算表引擎也沒用到 `[a]` 的所有功能<br>
     (只用到 `map`, 沒有計算長度, 或只對其中一些元素操作等等)<br>
     所以可以把實作再一般化一點
@@ -933,7 +977,9 @@ fmap (k . j) === fmap k . fmap j
 --
 
   + 使用 `Functor` 的人通常會假設這性質存在, 如果 `instance` `Functor` 的人沒有保持這性質的話, 可能會造成有問題的程式<br>
-    (除非只有知道祕密的你自己會用)
+    (除非只有知道祕密的你自己會用)<br>
+--
+    (不過三個月後的你也不會記得的... UCCU~)
 
 --
   + 用比較簡單的角度看待 `Functor` 對 `fmap` 的良心要求就是:
@@ -996,23 +1042,31 @@ instance Functor (Constant a) where
   fmap _ (Constant a) = Constant a
   -- 或 fmap _ = id 或 fmap = flip const 或 fmap = const id
 ```
+相當於只有 `Nothing` 的 `Maybe a`<br>
+
 我們一直相信的 `a` (這邊程式碼裡面對應的是 `b`) 根本從來就不曾存在...<br>
 我們向 `fmap` 的禱告一直都只是幻覺....
 
---
-  + 無聊或詐騙型的設計, 通常不會直接拿來用 (根本沒用), 但是可以點綴這個世界
+---
+## 無聊與詐騙型的 Functor instances
+
+  + 無聊或詐騙型的設計, 通常不會直接拿來用 (根本無用), 但是可以點綴這個世界
 
 --
+
       + 補齊數學世界失落的一角 (不過工程師不在意這個..)
 --
-      + 讓我們別處作更諧調的設計, 設計漂亮對稱的通則, 然後適時地塞進這種極端小物, 作出特例效果
+
+      + 讓我們別處作更諧調的設計, 採取漂亮對稱的通則 (就會 highly reusable),
+        然後使用時適時地塞進這種極端小物, 作出特例效果
 
 ---
 
 ## 實際試算表會用到的 Functor instance
 
 ```haskell
-instance Functor (Array (Int, Int)) -- 以 Int 為坐標的二維 random access 陣列
+instance Functor (Array (Int, Int))
+  -- 以 (Int, Int) 為坐標的二維 random access array
 ```
 
 --
@@ -1027,7 +1081,7 @@ loeb fs = xs where xs = fmap ($ xs) fs
 -- loeb :: [[a] -> a] -> [a]
 -- loeb fs = xs where xs = map ($ xs) fs
 
--- 那篇教學連結裡用的寫法, 可能想耍一下神祕..
+-- 那篇教學連結裡用的寫法, 可能他想耍一下神祕..
 -- loeb x = go where go = fmap ($ go) x
 ```
 
@@ -1048,20 +1102,20 @@ loeb x = go where go = fmap ($ go) x
 e = val 0
 
 -- Simple cell value
-val = const
+val = const -- const a b = a
 
 -- VAT of a cell's contents (10 %)
-vat ix = (* 0.1) . (! ix)
+vat ix = (* 0.1) . (! ix) -- (!) 是 array 取元素的函數, 這邊 ix 是坐標
 
 -- Sum of the values at a list of indices
 sum' ixs = \arr -> foldl' (\acc ix -> acc + arr ! ix) 0 ixs
 
 printArr :: Array (Int, Int) Double -> IO ()
 printArr arr =
-      forM_ [0..4] $ \i -> do
-            forM_ [0..4] $ \j ->
-                  printf "%4.1f   " (arr ! (i,j))
-            printf "\n"
+  forM_ [0..4] $ \i -> do -- 我覺得這樣用蠻像迴圈的
+    forM_ [0..4] $ \j ->
+      printf "%4.1f   " (arr ! (i,j))
+    printf "\n"
 ```
 
 ---
@@ -1070,13 +1124,13 @@ printArr arr =
 
 ```haskell
 spreadsheet = listArray ((0,0), (4,4))
---      Prices | VAT        | Effective prices + total
-      [ val 1,   vat (0,0),   sum' [(0,i) | i <- [0..1]],   e,   e
-      , val 3,   vat (1,0),   sum' [(1,i) | i <- [0..1]],   e,   e
-      , val 5,   vat (2,0),   sum' [(2,i) | i <- [0..1]],   e,   e
-      , val 2,   vat (3,0),   sum' [(3,i) | i <- [0..1]],   e,   e
-      ,     e,           e,   sum' [(i,2) | i <- [0..3]],   e,   e
-      ]
+-- Prices | VAT        | Effective prices + total
+  [ val 1,   vat (0,0),   sum' [(0,i) | i <- [0..1]],   e,   e
+  , val 3,   vat (1,0),   sum' [(1,i) | i <- [0..1]],   e,   e
+  , val 5,   vat (2,0),   sum' [(2,i) | i <- [0..1]],   e,   e
+  , val 2,   vat (3,0),   sum' [(3,i) | i <- [0..1]],   e,   e
+  ,     e,           e,   sum' [(i,2) | i <- [0..3]],   e,   e
+  ]
 
 main = printArr $ loeb spreadsheet
 ```
