@@ -204,7 +204,7 @@ layout: true
 
 ---
 
-## 人會怎麼算? (case 1)
+## Human Order (case 1)
 
 --
   + ```haskell
@@ -240,7 +240,7 @@ layout: true
 
 ---
 
-## 人會怎麼算? (case extra)
+## Human Order (case extra)
 
 --
   + ```haskell
@@ -581,7 +581,7 @@ take 4 fib
 ---
 ```haskell
 take 4
-  ( let fib = <.in.>
+  ( let fib = <.in.> -- 這是我自己亂發明的符號, 表示跟 in 後面一串一樣
     in 1 : 1 : zipWith (+) fib (tail fib)
   )
 ```
@@ -968,8 +968,8 @@ class Functor f where
 ## Functor 的良心要求
 
 ```haskell
-fmap id === id
-fmap (k . j) === fmap k . fmap j
+fmap id [全等] id
+fmap (k . j) [全等] fmap k . fmap j
 ```
 
   + 這不是 Haskell 的 type system 能確保的事情, 只能列作良心要求
