@@ -27,3 +27,10 @@
       + view patterns
       + guard, pattern guard, multiway if
       + do-notation
+
+  + [2015.1.7 lazy](http://cindylinz.github.io/Tutor-Haskell?volume=lazy)
+      + Haskell 無窮 List 展示
+      + Evaluation Strategy 介紹 (Applicative order, Normal order.. / Strict, Non-strict)
+      + Lazy evaluation 介紹, 展示
+      + Löb 介紹, 建構原理, 用法展示
+      + Functor 介紹, instance 展示
