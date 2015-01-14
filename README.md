@@ -34,3 +34,8 @@
       + Lazy evaluation 介紹, 展示
       + Löb 介紹, 建構原理, 用法展示
       + Functor 介紹, instance 展示
+
+  + [2015.1.14 monad](http://cindylinz.github.io/Tutor-Haskell?volume=monad)
+      + monad paradox, monad definition, monad laws
+      + 經典款 monad instance, 資料結構與實作
+      + (是以討論互動的方式進行, 直接閱讀可能用處不大)
