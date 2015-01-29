@@ -39,3 +39,13 @@
       + monad paradox, monad definition, monad laws
       + 經典款 monad instance, 資料結構與實作
       + (是以討論互動的方式進行, 直接閱讀可能用處不大)
+
+  + [2015.1.28 lens (begining)](http://cindylinz.github.io/Tutor-Haskell?volume=lens)
+      + 從問題情境介紹
+
+        ```haskell
+        type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t
+        ```
+
+      + 介紹部分 helper, 使用情境
+      + 沿伸閱讀材料
