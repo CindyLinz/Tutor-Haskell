@@ -61,7 +61,8 @@ layout: true
 
 --
 
-  + ```haskell
+  + 
+    ```haskell
     getUserName :: User -> Text
     setUserName :: User -> Text -> User
 
@@ -71,7 +72,8 @@ layout: true
 
 --
 
-  + ```haskell
+  + 
+    ```haskell
     getRoomUser :: Room -> Int -> User
     setRoomUser :: Room -> Int -> User -> Room
 
@@ -81,7 +83,8 @@ layout: true
 
 --
 
-  + ```haskell
+  + 
+    ```haskell
     getLobbyRoom :: Lobby -> Int -> Room
     setLobbyRoom :: Lobby -> Int -> Room -> Lobby
 
@@ -144,7 +147,8 @@ layout: true
   + 而 functional way 是定義 `update`, 然後拿 `update` 作 `get` 與 `set` 之用. 這 `update` 吃的是一個「改變」(function)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     updateUserName :: (Text -> Text) -> User -> User
     updateRoomUser :: Int -> (User -> User) -> Room -> Room
     updateLobbyRoom :: Int -> (Room -> Room) -> Lobby -> Lobby
