@@ -245,20 +245,23 @@ data Cup = forall c. Pourable c => Cup { cup :: c }
     forall 的相對面是 exist, 想想是誰對誰 forall, 誰對誰 exist
 ---
 ## `forall` 用在 Type Signature 裡面
-  + ```haskell
+  + 
+    ```haskell
     bracketShow :: forall a. Show a => a -> String
     bracketShow a = "[" ++ show a ++ "]"
     ```
     其實這跟沒加 `forall` 的一樣, 因為「最外層」的 type variable 就是要 forall 的, Haskell 會自動加.<br>
     (只是手動加會有額外啟動 ScopedTypeVariables extension 的效果)
 --
-  + ```haskell
+  + 
+    ```haskell
     pourOnce :: forall c. Pourable c => (c -> c) -> Mug -> Mug
       -- 這邊 forall c. 沒寫也會自動加
     pourOnce p m = p m -- error
     ```
 --
-  + ```haskell
+  + 
+    ```haskell
     pourTwice
       :: (forall c. Pourable c => c -> c)
       -> GlassCup -> Mug -> (GlassCup, Mug)
@@ -268,12 +271,14 @@ data Cup = forall c. Pourable c => Cup { cup :: c }
     ```
 ---
 ## `forall` 用在 Type Signature 裡面
-  + ```haskell
+  + 
+    ```haskell
     pourOnce :: forall c. Pourable c => (c -> c) -> Mug -> Mug
       -- 這邊 forall c. 沒寫也會自動加
     pourOnce p m = p m -- error
     ```
-  + ```haskell
+  + 
+    ```haskell
     pourTwice
       :: (forall c. Pourable c => c -> c)
       -> GlassCup -> Mug -> (GlassCup, Mug)
@@ -281,7 +286,8 @@ data Cup = forall c. Pourable c => Cup { cup :: c }
     p1 = pourTwice pour -- ok
     p2 = pourTwice pourMug -- error
     ```
-  + ```haskell
+  + 
+    ```haskell
     ($) :: forall a b. (a -> b) -> a -> b
     ($) f a = f a
     pp = ($) pourMug -- ok
@@ -289,7 +295,8 @@ data Cup = forall c. Pourable c => Cup { cup :: c }
     ppmm = ($) pourMug (Mug 5) -- ok
     ```
 --
-  + ```haskell
+  + 
+    ```haskell
     pourMugOnce :: (forall c. Pourable c => c -> Mug) -> Mug -> Mug
     pourMugOnce p m = p m -- ok
     pm = pourMugOnce pour -- error
