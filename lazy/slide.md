@@ -98,29 +98,34 @@ layout: true
 ## Applicative Order (case 1)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 a b = a * b
 
     f 1 (100 + 10) (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 110 (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 110 90
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     110 * 90
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     9900
     ```
 
@@ -129,24 +134,28 @@ layout: true
 ## Applicative Order (case 2)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 2 a b = a
 
     f 2 (100 + 10) (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 2 110 (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 2 110 90
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     110
     ```
 
@@ -155,19 +164,22 @@ layout: true
 ## Normal Order (case 2)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 2 a b = a
 
     f 2 (100 + 10) (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     100 + 10
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     110
     ```
 
@@ -176,29 +188,34 @@ layout: true
 ## Normal Order (case 1)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 a b = a * b
 
     f 1 (100 + 10) (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     (100 + 10) * (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     110 * (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     110 * 90
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     9900
     ```
 
@@ -207,34 +224,40 @@ layout: true
 ## Human Order (case 1)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 a b = a * b
 
     f 1 (100 + 10) (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     (100 + 10) * (100 - 10)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     100^2 - 10^2
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     10000 - 10^2
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     10000 - 100
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     9900
     ```
 
@@ -243,24 +266,28 @@ layout: true
 ## Human Order (case extra)
 
 --
-  + ```haskell
+  + 
+    ```haskell
     f 1 a b = a * b
 
     f 1 (f 1 10 20) (100 - 100)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     (f 1 10 20) * (100 - 100)
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     (f 1 10 20) * 0
     ```
 
 --
-  + ```haskell
+  + 
+    ```haskell
     0
     ```
 
@@ -369,7 +396,7 @@ layout: true
 
 ## 原則
 
-  + 還能拖著不算就千萬不要算. 沒被外界觀察到的一團運算式就擺在那邊處於爆與不爆之間的糾纏態 (學名叫 thunk)
+  + 還能拖著不算就千萬不要算. 沒被外界觀察到的一團運算式就擺在那邊處於爆與不爆之間的疊加態 (學名叫 thunk)
 
 --
 
@@ -377,15 +404,15 @@ layout: true
 
 ---
 
-## 糾纏態的一小步．程式的一大步
+## 疊加態的一小步．程式的一大步
 
-  + 崩塌(解開)的糾纏態只有兩種狀態
+  + 崩塌(解開)的疊加態只有兩種狀態
       + 爆
       + 沒爆
 
 --
 
-  + 解開糾纏態的一步, 只到確認它表面上有沒有爆, 就收工了
+  + 解開疊加態的一步, 只到確認它表面上有沒有爆, 就收工了
 
 --
 
@@ -404,7 +431,7 @@ layout: true
 
 ---
 
-## 糾纏態的一小步．程式的一大步
+## 疊加態的一小步．程式的一大步
 
   + 表面已解開 (沒爆) 的情況: (學名叫 weak head normal form)
 
@@ -417,7 +444,7 @@ layout: true
         ```
 
 --
-      + 表面經確認, 是一個 data constructor (裡面也許還有未解糾纏態就不管了)
+      + 表面經確認, 是一個 data constructor (裡面也許還有未解疊加態就不管了)
         ```haskell
         let a = a in (3+4, a, undefined)
           -- 雖然有還沒算完的 3+4, 有一算下去就沒完的 a, 還有一沾就爆的 undefined
@@ -428,14 +455,14 @@ layout: true
       + 或, 一個沒還沒吃夠參數的函數
         ```haskell
         let f a b = a + b in f 2
-          -- 還少吃一個, 所以這一團糾纏態算是確認表面上沒爆的
+          -- 還少吃一個, 所以這一團疊加態算是確認表面上沒爆的
         ```
 
 ---
 
-## 糾纏態的一小步．程式的一大步
+## 疊加態的一小步．程式的一大步
 
-  + 必須繼續往前解的情況 (都是從面對的糾纏態的最表面來看)
+  + 必須繼續往前解的情況 (都是從面對的疊加態的最表面來看)
 
 --
 
@@ -454,18 +481,18 @@ layout: true
           + `case` 或拆開的函數定義.. 從第一條 branch 開始看, 解開要判斷的 expression, 直到能判斷出確定要走這一條, 或確定不能走這一條 (那就再看第二條..)
 
 --
-          + `if` 就是把要檢查的 expression 的 `Bool` 糾纏態解到 `True` / `False` 為止<br>
+          + `if` 就是把要檢查的 expression 的 `Bool` 疊加態解到 `True` / `False` 為止<br>
             `if a then b else c` 其實就是 `case a of { True -> b; False -> c }`
 
 --
       + pattern matching 是我們把外部矛盾轉化為內部矛盾的手法<br>
-        利用解開糾纏態表面這一小步的動力, 層層接力解開整個程式
+        利用解開疊加態表面這一小步的動力, 層層接力解開整個程式
 
 ---
 
-## 糾纏態的一小步．程式的一大步
+## 疊加態的一小步．程式的一大步
 
-  + 正常情況下, 只有要被觀察的糾纏態才有必要解開, 使用 pattern matching 即可.<br>
+  + 正常情況下, 只有要被觀察的疊加態才有必要解開, 使用 pattern matching 即可.<br>
 --
     不過如果我們想在 polymorphism 這種我們根本不知道實際 type 的時候精控計算順序,
     因為不知道 type 所以無法寫下 pattern, Haskell 提供一個例外的 `seq` 函數
@@ -537,7 +564,7 @@ cfold (\a b go -> go (a+b)) (3+(2+(1+0))) []
 ```
 ---
 ```haskell
-3+(2+(1+0)) -- (+) 是 strict function, 它的實作會先要求把參數的糾纏態解開
+3+(2+(1+0)) -- (+) 是 strict function, 它的實作會先要求把參數的疊加態解開
 ```
 ---
 ```haskell
